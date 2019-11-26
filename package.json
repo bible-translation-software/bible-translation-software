@@ -1,0 +1,19 @@
+{
+  "name": "biblets",
+  "version": "0.0.1",
+  "description": "",
+  "main": "",
+  "dependencies": {
+    "prettier": "^1.18.2"
+  },
+  "devDependencies": {
+    "prettier": "1.18.2"
+  },
+  "scripts": {
+  },
+  "author": "",
+  "license": "GPLv2 or later",
+  "homepage": "",
+  "type": "module",
+  "private": true
+}

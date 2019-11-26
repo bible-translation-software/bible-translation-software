@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% blocktrans with full_name=team_member.get_full_name %}User {{ full_name }}{% endblocktrans %}{% endblock %}
+
+{% block main %}
+
+{% if perms.scripturet.propose_verse %}
+<ul class="uk-breadcrumb">
+  <li><a href="{% url "scripturet:team" %}">{% trans "Team" %}</a></li>
+  <li><span>{{ team_member.get_full_name }}</span></li>
+</ul>
+{% endif %}
+
+<img src="{{ team_member.userprofile.get_profile_pic_url }}" width="100" height="100" alt="" crossorigin="anonymous" style="float: right">
+
+<h1>{% blocktrans with full_name=team_member.get_full_name %}User {{ full_name }}{% endblocktrans %}</h1>
+
+{% if request.user == team_member %}
+<div uk-alert>
+  <p>{% trans "This page is visible to all your team mates. If you want, you can change your name and photo." %}</p>
+  <p><a href="{% url "scripturet:user_profile" %}">{% trans "Personal settings" %}</a></p>
+</div>
+{% endif %}
+
+<h2>{% trans "Activity:" %}</h1>
+
+{% for activity_item in activity %}
+{% ifchanged %}<h4>{{ activity_item.date_created | date:"l j F Y" }}</h4>{% endifchanged %}
+
+<a class="activity-item" href="{{ activity_item.link_href }}" title="{{ activity_item.date_created }}">
+  {{ activity_item.link_text }}
+</a>
+
+{% empty %}
+
+<div uk-alert class="uk-alert-danger">
+  <p>{% trans "No activity found." %}</p>
+</div>
+
+
+{% endfor %}
+
+{% endblock %}
+

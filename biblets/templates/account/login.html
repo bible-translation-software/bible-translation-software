@@ -1,0 +1,83 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+{% load static %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+
+<script type="module" src="{% static "login.js" %}"></script>
+
+<h1>{{ request.site.name }}</h1>
+
+<h3>{% trans "1. Choose how you would like to sign in:" %}</h3>
+
+<div uk-alert>
+  <a class="uk-alert-close" uk-close></a>
+  {% trans "(We recommend signing in with Google to all users who have a Google account.)" %}
+</div>
+
+{% get_providers as socialaccount_providers %}
+
+<div class="uk-margin">
+  {% if socialaccount_providers %}
+
+  {% for provider in socialaccount_providers %}
+  <a
+    title="{{ provider.name }}"
+    class="uk-button uk-button-primary"
+    href="{% provider_login_url provider.id process="login" scope=scope auth_params=auth_params %}"
+    style="text-transform: none"
+    ><i class="fab fa-{{ provider.id }}"></i> {{ provider.name }}</a>
+  {% endfor %}
+
+  {# Note: this code does not handle the OpenID provider, but we're not using that #}
+
+  {% include "socialaccount/snippets/login_extra.html" %}
+
+  {% endif %}
+
+  <a
+    class="uk-button uk-button-secondary js-choose-email"
+    href="#"
+    ><i class="far fa-envelope"></i> {% trans "Email and password" %}</a>
+</div>
+
+<div class="js-step-2" hidden>
+  <h3>{% trans "2. Have you already created an account?" %}</h3>
+
+  <ul>
+    <li>{% trans "Yes." %} <a class="uk-button uk-button-default js-choose-sign-in">{% trans "Sign in" %}</a></li>
+    {# We're using url "account_signup" instead of variable signup_url here to customise the subsequent redirect #}
+    <li>{% trans "No." %} <a class="uk-button uk-button-default" href="{% url "account_signup" %}">{% trans "Sign up" %}</a></li>
+  </ul>
+</div>
+
+<form class="login js-step-3" method="POST" action="{% url 'account_login' %}" {% if request.method == "GET" %}hidden{% endif %}>
+  {% csrf_token %}
+  <h3>{% trans "3. Enter your sign in details:" %}</h3>
+  {{ form.non_field_errors }}
+  <div>
+    <label class="uk-form-label" for="{{ form.login.id_for_label }}">{{ form.login.label }}:</label>
+    {{ form.login.errors }}
+    <div class="uk-form-controls">
+      <input class="uk-input {% if form.login.errors %}uk-form-danger{% endif %}" id="{{ form.login.id_for_label }}" type="email" name="{{ form.login.html_name }}" value="{{ form.login.value | default:"" }}" autofocus required dir="ltr" placeholder="{% trans "example@example.com" %}">
+    </div>
+  </div>
+  <div>
+    <label class="uk-form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}:</label>
+    <a href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a>
+    {{ form.password.errors }}
+    <div class="uk-form-controls">
+      <input class="uk-input {% if form.password.errors %}uk-form-danger{% endif %}" id="{{ form.password.id_for_label }}" type="password" name="{{ form.password.html_name }}" required dir="auto">
+    </div>
+  </div>
+  {% if redirect_field_value %}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  {% endif %}
+  <button class="uk-button uk-button-primary" type="submit">{% trans "Submit" %}</button>
+</form>
+
+{% endblock %}

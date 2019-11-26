@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# We're using this buildpack for Heroku to make sure Gettext is installed:
+
+# https://github.com/piotras/heroku-buildpack-gettext.git
+
+cd locale && python ../manage.py compilemessages

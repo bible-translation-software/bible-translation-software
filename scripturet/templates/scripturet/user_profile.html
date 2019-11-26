@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load static %}
+
+{% block head_title %}{% trans "User profile" %}{% endblock %}
+
+{% block main %}
+
+<h1>{% blocktrans %}Personal settings{% endblocktrans %}</h1>
+
+<p>
+  {% blocktrans with email=request.user.email %}Email address: {{ email }}{% endblocktrans %}
+</p>
+
+<p>
+  <a href="{% url "account_change_password" %}" class="uk-button uk-button-default">{% trans "Change password" %}</a>
+  <a href="{% url "account_email" %}" class="uk-button uk-button-default"><i class="far fa-envelope"></i> {% trans "Change email" %}</a>
+  <a href="{% url "socialaccount_connections" %}" class="uk-button uk-button-default" style="text-transform: none"><i class="fab fa-google"></i> {% trans "Connect account with Google" %}</a>
+  <a href="{% url "scripturet:change_name" %}" class="uk-button uk-button-default">{% trans "Change name" %}</a>
+</p>
+
+<img src="{{ request.user.userprofile.get_profile_pic_url }}" crossorigin="anonymous" style="float: right" width=80 height=80>
+
+<h3>{% trans "Profile picture" %}</h3>
+
+<p>{% blocktrans trimmed %}
+  This website has attempted to detect your profile picture, using Google and
+  Gravatar. If it can't find a profile picture, it will use an automatically
+  generated picture of a robot.
+{% endblocktrans %}</p>
+
+
+<form method=POST action="{% url "scripturet:thank_you_profile_pic" %}">
+  {% csrf_token %}
+
+  <h4>{% trans "Gravatar image:" %}</h4>
+  <img src="{{ request.user.userprofile.gravatar_url }}" crossorigin="anonymous" width=150 height=150 alt="" style="max-width: none; width: 150px; height: 150px; border: 1px solid gray">
+  <br>
+  <button type=submit name="profile-pic-url" value="{{ request.user.userprofile.gravatar_url }}">{% trans "Use Gravatar image" %}</button>
+  <a href="https://gravatar.com" target="_blank" rel="noopener">
+    {% trans "Change profile pic on Gravatar" %}
+    <i class="fas fa-external-link-alt"></i>
+  </a>
+
+  {% if request.user.userprofile.social_account_avatar_url %}
+  <h4>{% trans "Google image:" %}</h4>
+  <img src="{{ request.user.userprofile.social_account_avatar_url }}" crossorigin="anonymous" width=150 height=150 alt="" style="max-width: none; width: 150px; height: 150px; border: 1px solid gray">
+  <br>
+  <button type=submit name="profile-pic-url" value="">{% trans "Use Google image" %}</button>
+  <a href="https://myaccount.google.com/personal-info" target="_blank" rel="noopener">
+    {% trans "Change profile pic on Google" %}
+    <i class="fas fa-external-link-alt"></i>
+  </a>
+  {% endif %}
+
+  <h4>{% trans "Other images:" %}</h4>
+  <p>{% blocktrans trimmed %}
+    Or you can use one of these automatically generated avatars:
+  {% endblocktrans %}</p>
+
+
+  {% for suggested_pic in suggested_pics %}
+  <div style="display: inline-block; margin-bottom: 2rem; text-align: center">
+    {# We need to override styles for img in uikit-rtl.min.css #}
+    <img src="{{ suggested_pic }}" crossorigin="anonymous" width=150 height=150 alt="" loading="lazy" style="max-width: none; width: 150px; height: 150px; border: 1px solid gray">
+    <br>
+    <button type="submit" name="profile-pic-url" value="{{ suggested_pic }}">{% trans "Use this image" %}</button>
+  </div>
+  {% endfor %}
+
+{% endblock %}

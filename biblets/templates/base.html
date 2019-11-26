@@ -1,0 +1,91 @@
+{% load i18n static %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+<!DOCTYPE html>
+<html {% if LANGUAGE_BIDI %}dir="rtl" {% endif %}>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block head_title %}{% endblock %} | {{ request.site.name }}</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous" media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lateef&display=swap&subset=arabic" crossorigin="anonymous" media="print" onload="this.media='all'">
+    {% if LANGUAGE_BIDI %}
+    <link rel="stylesheet" href="{% static "uikit/css/uikit-rtl.min.css" %}">
+    {% else %}
+    <link rel="stylesheet" href="{% static "uikit/css/uikit.min.css" %}">
+    {% endif %}
+    <link rel="stylesheet" href="{% static "biblets/biblets.css" %}">
+
+    <script src="{% static "biblets/nomodule.js" %}" nomodule async id="no-module-script" data-message="{% trans "Please note that this website is incompatible with your browser, please update to a modern browser." %}"></script>
+    <script src="{% static "uikit/js/uikit.min.js" %}"></script>
+    <script src="{% static "uikit/js/uikit-icons.min.js" %}"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    {% block body %}
+    <nav class="top-bar">
+      <span class="top-bar__links">
+        {% if request.user.is_authenticated %}
+        <a href="{% url "scripturet:all_chapters" %}">{% trans "All chapters" %}</a>
+        {% if perms.scripturet.propose_verse %}
+        |
+        <a href="{% url "scripturet:team" %}">{% trans "Team" %}</a>
+        {% endif %}
+        {% endif %}
+      </span>
+
+      <span class="js-clock">{% if last_action_time %}{% trans "__:__ __from last change" %}{% endif %}</span>
+
+      <span class="top-bar__user">
+        {% if request.user.is_authenticated %}
+
+        <a href="{% url "scripturet:user_profile" %}">{% trans "Personal settings" %}</a>
+
+        {% if request.user.is_staff %}
+        |
+        <a href="{% url "admin:index" %}">{% trans "Admin" %}</a>
+        {% endif %}
+        |
+        <a href="{% url "account_logout" %}">{% trans "Log out" %}</a>
+
+        {% else %}
+
+        <a href="{% url "account_login" %}">{% trans "Log in" %}</a>
+
+        {% endif %}
+
+        {% if request.user.is_authenticated %}
+        <img src="{{ request.user.userprofile.get_profile_pic_url }}" width=25 height=25 crossorigin="anonymous" alt="">
+        {% endif %}
+
+      </span>
+    </nav>
+
+    <div class="wrapper">
+
+      {% for message in messages %}
+      <div uk-alert class="
+        {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}uk-alert-success
+        {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}uk-alert-warning
+        {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}uk-alert-danger
+        {% endif %}"
+      >
+        <a uk-close class="uk-alert-close"></a>
+        {{message}}
+      </div>
+      {% endfor %}
+
+      {% block main %}{% endblock %}
+      {% block content %}{% endblock %}
+
+    </div>
+
+    {% block extra_body %}{% endblock %}
+    {% endblock %}
+
+    <noscript>
+      <div uk-alert class="uk-alert-danger">
+        <p>{% trans "You need to enable Javascript in your browser." %}</p>
+      </div>
+    </noscript>
+  </body>
+</html>

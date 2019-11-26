@@ -1,0 +1,6 @@
+/env
+*.pyc
+*.mo
+/node_modules
+/.venv
+.env

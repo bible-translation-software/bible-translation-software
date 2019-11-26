@@ -1,0 +1,111 @@
+{% load i18n static humanize %}
+<div class="step step--grey">
+  <h2 id="comments">{% trans "Comments" %}</h2>
+
+  {% if comments %}
+  <ul class="uk-comment-list">
+    {% for comment in comments %}
+    <li class="js-comment">
+      <article class="uk-comment" id="comment-{{ comment.id }}">
+        <header class="uk-comment-header uk-position-relative">
+          <div class="uk-grid-medium uk-flex-middle" uk-grid>
+            <div class="uk-width-auto">
+              <img class="uk-comment-avatar" src="{{ comment.author.userprofile.get_profile_pic_url }}" width="52" height="52" alt="" crossorigin="anonymous">
+            </div>
+            <div class="uk-width-expand">
+              <h4 class="uk-comment-title uk-margin-remove">{{ comment.author.get_full_name }}</h4>
+              <p class="uk-comment-meta uk-margin-remove-top">
+                <span title="{{ comment.date_created }}">{{ comment.date_created | naturaltime }}</span>
+              </p>
+            </div>
+          </div>
+          {% if not comment.comment_children.exists %}
+          <div class="uk-position-top-left uk-position-small uk-hidden-hover">
+            <button class="js-show-comment uk-button uk-button-default"><i class="fas fa-reply"></i> {% trans "Reply" context "Reply to comment" %}</button>
+            {% if comment.author == request.user %}{% if perms.scripturet.delete_comment or comment.recent_enough_to_delete %}
+            <form method="POST" action="{% url "scripturet:delete_comment" %}" class="inline-form">
+              {% csrf_token %}
+              <input type="hidden" name="comment" value="{{ comment.id }}">
+              <button type="submit" class="uk-button uk-button-default"><i class="fas fa-trash"></i> {% trans "Delete" context "Reply to comment" %}</button>
+            </form>
+            {% endif %}{% endif %}
+          </div>
+          {% endif %}
+          {# <div class="uk-position-top-right uk-position-small uk-hidden-hover"><a class="uk-link-muted" href="#">Reply</a></div> #}
+        </header>
+        <div class="uk-comment-body">
+          {{ comment.get_comment_html }}
+        </div>
+      </article>
+      <ul>
+        {% for subcomment in comment.comment_children.all %}
+        <li>
+          <article class="uk-comment" id="comment-{{ subcomment.id }}">
+            <header class="uk-comment-header uk-position-relative">
+              <div class="uk-grid-medium uk-flex-middle" uk-grid>
+                <div class="uk-width-auto">
+                  <img class="uk-comment-avatar" src="{{ subcomment.author.userprofile.get_profile_pic_url }}" width="52" height="52" alt="" crossorigin="anonymous">
+                </div>
+                <div class="uk-width-expand">
+                  <h4 class="uk-comment-title uk-margin-remove">{{ subcomment.author.get_full_name }}</h4>
+                  <p class="uk-comment-meta uk-margin-remove-top"><span title="{{ subcomment.date_created }}">{{ subcomment.date_created | naturaltime }}</span></p>
+                </div>
+              </div>
+              {% if forloop.last %}
+              <div class="uk-position-top-left uk-position-small uk-hidden-hover">
+                <button class="js-show-comment uk-button uk-button-default"><i class="fas fa-reply"></i> {% trans "Reply" context "Reply to comment" %}</button>
+                {% if subcomment.author == request.user %}{% if perms.scripturet.delete_comment or subcomment.recent_enough_to_delete %}
+                <form method="POST" action="{% url "scripturet:delete_comment" %}" class="inline-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="comment" value="{{ subcomment.id }}">
+                  <button type="submit" class="uk-button uk-button-default"><i class="fas fa-trash"></i> {% trans "Delete" context "Reply to comment" %}</button>
+                </form>
+                {% endif %}{% endif %}
+              </div>
+              {% endif %}
+            </header>
+            <div class="uk-comment-body">
+              {{ subcomment.get_comment_html }}
+            </div>
+          </article>
+        </li>
+        {% endfor %}
+        <li>
+          <form method="POST" action="{% url "scripturet:submit_subcomment" %}" class="uk-comment js-comment-show-this" hidden>
+            {% csrf_token %}
+            <input type="hidden" name="parent" value="{{ comment.id }}">
+            <p><textarea name="comment" dir="auto" placeholder="{% trans "..." %}" class="comment-textarea js-comment-textarea"></textarea></p>
+            <p>
+              <button class="uk-button uk-button-primary">{% trans "Submit comment" %}</button>
+              {# TODO: don't throw away multiple comments in progress #}
+            </p>
+          </form>
+        </li>
+      </ul>
+    </li>
+    {% endfor %}
+  </ul>
+  {%endif %}
+
+
+  {% if perms.scripturet.handle_own_comment %}
+  <div class="js-comment">
+    <div style="text-align: center">
+      <button class="js-show-comment uk-button uk-button-primary"><i class="fas fa-comment"></i> {% trans "Start new comment thread" %}</button>
+    </div>
+
+    <div class="uk-comment js-comment-show-this" hidden>
+      <form method="POST" action="{% url "scripturet:submit_comment_on_verse" %}">
+        {% csrf_token %}
+        <input type="hidden" name="verse" value="{{ youversion_verse.id }}">
+        <p><textarea name="comment" required placeholder="{% trans "..." %}" dir=auto class="comment-textarea js-comment-textarea"></textarea></p>
+        <button class="uk-button uk-button-primary"><i class="fas fa-comment"></i> {% trans "Start new comment thread" %}</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div uk-alert class="uk-alert-warning">
+    <p>{% trans "You do not have permission to add your own comment." %}</p>
+  </div>
+  {% endif %}
+</div>

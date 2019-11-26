@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load static %}
+
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+
+{% block head_title %}{{ youversion_verse.pretty_reference_string }}{% endblock %}
+
+{% block main %}
+
+<ul class="uk-breadcrumb">
+  <li><a href="{% url "scripturet:all_chapters" %}">{% trans "All chapters" %}</a></li>
+  <li><a href="{% url "scripturet:chapter" book_code=youversion_verse.book.book_code chapter_number=youversion_verse.chapter_number %}">{{ youversion_verse.book.book_name }} {{ youversion_verse.chapter_number }}</a></li>
+  <li><span>{{ youversion_verse.verse_number }}</span></li>
+</ul>
+
+{% csrf_token %}
+
+{{ script_data|json_script:"script-data" }}
+<script src="{% static "scripturet/jquery.min.js" %}"></script>
+<script src="{% static "scripturet/diff.min.js" %}"></script>
+<script type="module" async src="{% static "scripturet/verse.js" %}"></script>
+
+<div style="float: left">
+  {% spaceless %}
+  {% if comments and perms.scripturet.view_comment %}
+  <a class="next-prev-link" href="#comments"><i class="fas fa-comments"></i></a>
+  &nbsp;
+  {% endif %}
+  {% if youversion_verse.previous_verse and perms.scripturet.view_verse %}
+  <a class="next-prev-link" href="{{ youversion_verse.previous_verse.get_absolute_url }}" title="{{ youversion_verse.previous_verse.pretty_reference_string }}">
+    {% if LANGUAGE_BIDI %}
+    <i class="fas fa-arrow-circle-right"></i>
+    {% else %}
+    <i class="fas fa-arrow-circle-left"></i>
+    {% endif %}
+  </a>
+  {% endif %}
+  <a class="next-prev-link" href="{% url "scripturet:chapter" book_code=youversion_verse.book.book_code chapter_number=youversion_verse.chapter_number %}" title="{% trans "See chapter" %}">
+    <i class="fas fa-arrow-circle-up"></i>
+  </a>
+  {% if youversion_verse.next_verse and perms.scripturet.view_verse %}
+  <a class="next-prev-link" href="{{ youversion_verse.next_verse.get_absolute_url }}" title="{{ youversion_verse.next_verse.pretty_reference_string }}">
+    {% if LANGUAGE_BIDI %}
+    <i class="fas fa-arrow-circle-left"></i>
+    {% else %}
+    <i class="fas fa-arrow-circle-right"></i>
+    {% endif %}
+  </a>
+  {% endif %}
+  {% endspaceless %}
+</div>
+
+<h1>
+  {{ youversion_verse.pretty_reference_string }}
+  {% if test_for_new_user %}
+  <i class="fas fa-graduation-cap" title="{% trans "This verse is used in initial test" %}"></i>
+  {% endif %}
+</h1>
+
+{% for other_version in other_versions %}
+<p dir="{{ other_version.dir }}" lang="{{ other_version.lang }}">
+  <a href="{{ other_version.youversion_link }}" target="_blank" rel="noopener" class="version-indicator">{{ other_version.translation_code }}</a>
+  <span dir="{{ other_version.dir }}">
+    <span style="white-space: pre-wrap">{{ other_version.text }}</span>
+  </span>
+</p>
+{% endfor %}
+
+{% include "scripturet/step_translation.html" %}
+
+{% if perms.scripturet.view_comment %}
+{% include "scripturet/verse_comments.html" %}
+{% endif %}
+
+{% endblock %}

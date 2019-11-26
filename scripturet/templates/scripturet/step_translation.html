@@ -1,0 +1,167 @@
+{% load i18n static %}
+<div class="step js-step" id="step-translation">
+
+  <div class="step-title">
+    <h2 class="step-title__h2">
+      {% trans "Translation revision work" %}
+
+      {% comment %}
+      We're hiding the claims in this page for now, until we've worked out a
+      better UX.
+      {% endcomment %}
+
+      {# {% if perms.scripturet.view_claim %} #}
+      {# <span class="js-claimers" data-step="translation"> #}
+      {#   {% spaceless %} #}
+      {#   {% for progress_avatar in progress_avatars.translation %} #}
+      {#   {% if progress_avatar is None %} #}
+      {#   <div class="avatar-check"><div class="avatar-check__avatar"></div></div> #}
+      {#   {% else %} #}
+      {#   <div class="avatar-check"> #}
+      {#     <img src="{{ progress_avatar.user.userprofile.get_profile_pic_url }}" title="{{ progress_avatar.user.get_full_name }}" crossorigin="anonymous" class="avatar-check__avatar"> #}
+      {#     {% if progress_avatar.checked %}<img src="{% static "scripturet/check-solid.svg" %}" class="avatar-check__check">{% endif %} #}
+      {#   </div> #}
+      {#   {% endif %} #}
+      {#   {% endfor %} #}
+      {#   {% endspaceless %} #}
+      {# </span> #}
+      {# {% endif %} #}
+    </h2>
+    {# {% if perms.scripturet.view_claim and perms.scripturet.handle_own_claim %} #}
+    {# <span> #}
+    {#   <form method="POST" #}
+    {#     action="{% url "scripturet:release_claim" book_code=youversion_verse.book.book_code chapter_number=youversion_verse.chapter_number verse_number=youversion_verse.verse_number %}" #}
+    {#     class="js-reveal-when-claimed" #}
+    {#     {% if not claimed.translation %}hidden {% endif %} #}
+    {#   > #}
+    {#     {% csrf_token %} #}
+    {#     <input type="hidden" name="step" value="translation"> #}
+    {#     <button class="uk-button uk-button-default" type="submit">{% trans "Release" %}</button> #}
+    {#   </form> #}
+    {#   {% if not claimed.translation and able_to_claim.translation %} #}
+    {#   <button class="js-claim-verse uk-button uk-button-default">{% spaceless %} #}
+    {#     <img src="{{ request.user.userprofile.get_profile_pic_url }}" width=25 height=25 alt="" crossorigin="anonymous"> #}
+    {#     {% trans "Claim verse to work on later" %} #}
+    {#   {% endspaceless %}</button> #}
+    {#   {% endif %} #}
+    {# </span> #}
+    {# {% endif %} #}
+  </div>
+
+  {% if show_diff_button %}
+  <p style="font-size: 0.8rem; display: flex; align-items: center">
+    <span style="display: inline-block; margin: 0.4rem">
+      <input class="tgl tgl-skewed js-show-diff" id="cb3" type="checkbox"/>
+      <label class="tgl-btn" data-tg-off="{% trans "OFF" %}" data-tg-on="{% trans "ON" %}" for="cb3"></label>
+    </span>
+    <span style="font-size: 120%;">
+      {% trans "Show changes" %}
+    </span>
+  </p>
+  {% endif %}
+
+
+  <details hidden> {# TODO: make no longer hidden #}
+    <summary><i class="fas fa-info-circle"></i> {% trans "Help" %}</summary>
+    {# <p>{% blocktrans trimmed %} #}
+    {#   To complete this step, two translators are required to check the existing #}
+    {#   translation, and to propose corrections if needed. The two translators must #}
+    {#   work together: the second translator must approve the suggested correction #}
+    {#   within 12 hours, or the correction will be lost. #}
+    {# {% endblocktrans %}</p> #}
+    <p>{% blocktrans trimmed %}
+      Don't forget to read the verse in its context first before working on the verse.
+    {% endblocktrans %}</p>
+  </details>
+
+  {% for correction in original_and_corrections %}
+  <div class="verse js-verse
+    {% if correction.published or correction.get_most_approved_equivalent_verse == correction or new_user_allowed %}
+    {% else %}verse--obscured
+    {% endif %}">
+    <div class="verse__date" dir=auto>
+      {% if correction.published %}
+      <img src="{% static "scripturet/bible-app-icon.png" %}" width=32 alt="" title="{% trans "YouVersion 2018" %}">
+      {% trans "YouVersion 2018" %}
+      {% else %}
+      {{ correction.date_created }}
+      {% endif %}
+    </div>
+    <div class="verse__authors js-add-missing-slots">{% spaceless %}
+      {% for approval in correction.approval_set.all %}
+      {% if approval.step == 'translation' %}
+      {% if perms.scripturet.view_approval or approval.approver == request.user %}
+      <div class="avatar-check js-avatar-check">
+        <a href="{{ approval.approver.userprofile.get_absolute_url }}">
+          <img src="{{ approval.approver.userprofile.get_profile_pic_url }}" title="{{ approval.approver.get_full_name }}" crossorigin="anonymous" class="avatar-check__avatar">
+        </a>
+        <img src="{% static "scripturet/check-solid.svg" %}" class="avatar-check__check">
+      </div>
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+    {% endspaceless %}</div>
+    <div
+      class="verse__text js-verse-text {% if not correction.published %}js-diff-capable {% endif %}"
+      {% if not correction.published %}data-original="{{ correction.get_equivalent_published_verse.text }}"{% endif %}
+      >{{ correction.text }}</div>
+    {% if perms.scripturet.view_categoryreview %}
+    <div class="verse__category-reviews">
+      {% include "scripturet/category_count.html" with verse=correction request=request only %}
+    </div>
+    {% endif %}
+    {% if perms.scripturet.propose_verse or new_user_allowed %}
+    <div class="verse__buttons">
+      <button class="js-new-translation uk-button uk-button-default"><i class="fas fa-pen"></i> {% trans "New translation, starting from this translation" %}</button>
+      {# TODO: approvals can actually be for different steps, this needs to be narrowed to just translation step #}
+      {% if not request.user in correction.approvers.all %}
+      <form class="inline-form" method="POST" action="{% url "scripturet:submit_correct_verse" verse_id=correction.id %}">
+        {% csrf_token %}
+        <button class="uk-button uk-button-default"><i class="fas fa-check"></i> {% trans "Correct and understood translation" %}</button>
+      </form>
+      {% endif %}
+      {% for approval in correction.approval_set.all %}
+      {% if approval.approver == request.user and approval.recent_enough_to_delete and approval.step == 'translation' and not new_user_allowed %}
+      <form class="inline-form" method="POST" action="{% url "scripturet:delete_approval" %}">
+        {% csrf_token %}
+        <input type="hidden" name="approval" value="{{ approval.id }}">
+        <button type="submit" class="uk-button uk-button-default"><i class="fas fa-undo"></i> {% trans "Undo marking this translation as correct" context "button label" %}</button>
+      </form>
+      {% endif %}
+      {% endfor %}
+
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+
+  <form method="POST"
+    action="{% url "scripturet:verse" book_code=youversion_verse.book.book_code chapter_number=youversion_verse.chapter_number verse_number=youversion_verse.verse_number %}"
+    class="js-review-form"
+    hidden
+  >
+    {% csrf_token %}
+    <p>
+      <span style="float: left">
+          <button type="button" class="js-insert-text">«</button>
+          <button type="button" class="js-insert-text">»</button>
+          <button type="button" class="js-insert-text">!</button>
+      </span>
+      <label>{% trans "Correction" %}
+          <textarea name="correction" class="correction-textarea js-textarea" spellcheck=false required style="width: 100%"></textarea>
+      </label>
+    </p>
+    <button type="submit" class="uk-button uk-button-primary">{% trans "Save revision" context "button label" %}</button>
+  </form>
+
+  {% if perms.scripturet.view_verse %}
+  <div uk-alert>
+    <a class="uk-alert-close" uk-close></a>
+    <p>
+      <i class="fas fa-laptop-code"></i>
+      {% trans "The second, third and fourth steps have not yet been implemented on the website." %}
+    </p>
+  </div>
+  {% endif %}
+</div>

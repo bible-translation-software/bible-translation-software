@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block main %}
+
+<p>{% blocktrans trimmed %}
+  Thank you for setting your profile pic.
+{% endblocktrans %}</p>
+
+<img src="{{ request.user.userprofile.get_profile_pic_url }}" crossorigin="anonymous" width=150 height=150 alt="">
+
+{% endblock %}

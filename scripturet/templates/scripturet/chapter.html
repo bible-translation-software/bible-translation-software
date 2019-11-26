@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+
+{% block head_title %}{{ book.book_name }} {{ chapter_number }}{% endblock %}
+
+{% block main %}
+
+<ul class="uk-breadcrumb">
+  <li><a href="{% url "scripturet:all_chapters" %}">{% trans "All chapters" %}</a></li>
+  <li><span>{{ book.book_name }} {{ chapter_number }}</span></li>
+</ul>
+
+<script src="{% static "scripturet/jquery.min.js" %}"></script>
+<script src="{% static "scripturet/diff.min.js" %}"></script>
+<script type="module" async src="{% static "scripturet/chapter.js" %}"></script>
+
+<div style="float: left">
+  {% spaceless %}
+  {% if previous_link %}
+  <a class="next-prev-link" href="{{ previous_link }}" title="{% trans "Previous chapter" %}">
+    {% if LANGUAGE_BIDI %}
+    <i class="fas fa-arrow-circle-right"></i>
+    {% else %}
+    <i class="fas fa-arrow-circle-left"></i>
+    {% endif %}
+  </a>
+  {% endif %}
+  <a class="next-prev-link" href="{% url "scripturet:all_chapters" %}" title="{% trans "All chapters" %}">
+    <i class="fas fa-arrow-circle-up"></i>
+  </a>
+  {% if next_link %}
+  <a class="next-prev-link" href="{{ next_link }}" title="{% trans "Next chapter" %}">
+    {% if LANGUAGE_BIDI %}
+    <i class="fas fa-arrow-circle-left"></i>
+    {% else %}
+    <i class="fas fa-arrow-circle-right"></i>
+    {% endif %}
+  </a>
+  {% endif %}
+  {% endspaceless %}
+</div>
+
+<h1>
+  {{ book.book_name }} {{ chapter_number }}
+  {% if test_for_new_user %}
+  <i class="fas fa-graduation-cap" title="{% trans "This chapter is used in initial test" %}"></i>
+  {% endif %}
+</h1>
+
+
+<p style="float: left">
+  {% for link in other_version_links %}
+  <a href="{{ link.link }}" class="version-indicator" target="_blank" rel="noopener">{{ link.name }}</a>
+  {% endfor %}
+</p>
+
+<p style="font-size: 0.8rem; display: flex; align-items: center">
+  <span style="display: inline-block; margin: 0.4rem">
+    <input class="tgl tgl-skewed js-show-diff" id="cb3" type="checkbox"/>
+    <label class="tgl-btn" data-tg-off="{% trans "OFF" %}" data-tg-on="{% trans "ON" %}" for="cb3"></label>
+  </span>
+  <span style="font-size: 120%;">
+    {% trans "Show changes" %}
+  </span>
+</p>
+
+<div class="chapter-grid">
+  <div></div>
+  <div title="{% trans "1. Translation" %}">1.</div>
+  <div></div>
+  <div title="{% trans "2. Verse validation" %}">2.</div>
+  <div title="{% trans "3. Chapter validation" %}">3.</div>
+  <div title="{% trans "4. Oral validation" %}">4.</div>
+  <div></div>
+  <div></div>
+
+  {% for row in rows %}
+
+  <div>
+    {% if row.in_test %}
+    <i class="fas fa-graduation-cap" style="font-size: 26px" title="{% trans "This verse is used in initial test" %}"></i>
+    {% endif %}
+  </div>
+
+  {% for step_avatar in row.verse.get_progress_avatars %}
+  {# TODO: new users can't see their own progrsess, because get_progress_avatars doesn't behave correctly #}
+  {% if step_avatar and perms.scripturet.view_claim %}
+  <div class="avatar-check">
+    <a href="{{ step_avatar.user.userprofile.get_absolute_url }}">
+      <img src="{{ step_avatar.user.userprofile.get_profile_pic_url }}"
+        crossorigin="anonymous"
+        title="{{ step_avatar.user.get_full_name }}"
+        class="avatar-check__avatar">
+    </a>
+    {% if step_avatar.checked %}<img src="{% static "scripturet/check-solid.svg" %}" class="avatar-check__check">{% endif %}
+  </div>
+  {% else %}
+  <div class="avatar-check">
+    <div class="avatar-check__avatar"></div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  <a
+    class="verse-button {% if forloop.counter|divisibleby:2 %}verse-button--striped{% endif %}"
+    href="{{ row.verse.get_absolute_url }}">{% blocktrans with verse_number=row.verse.verse_number %}Verse {{ verse_number }}{% endblocktrans %}
+  </a>
+
+  <div style="padding: 0 0.5rem">
+    <span style="white-space: pre-wrap" class="js-diff-capable" data-original="{{ row.published_verse.text }}">{{ row.verse.text }}</span>
+  </div>
+  {% endfor %}
+</div>
+
+
+{% endblock %}
