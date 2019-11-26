@@ -1,3 +1,7 @@
+# Bible Translation Software
+
+Web app to aid teams translating the Bible (built on Django)
+
 # Installation
 
 On Ubuntu, you will need to install these dependencies:
