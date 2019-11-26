@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+"psycopg2-binary" = "*"
+django-annoying = "*"
+django-allauth = "*"
+gunicorn = "*"
+dj-database-url = "*"
+whitenoise = "*"
+robohash = {git = "https://github.com/e1ven/Robohash.git"}
+
+[dev-packages]
+pyflakes = "*"
+ipython = "*"
+
+[requires]
+python_version = "3.7"

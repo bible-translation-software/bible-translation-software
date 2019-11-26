@@ -1,0 +1,49 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Signup" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Sign Up" %}</h1>
+
+<p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
+
+<form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+  {% csrf_token %}
+
+  {{ form.non_field_errors }}
+
+  <div>
+    <label class="uk-form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}:</label>
+    {{ form.email.errors }}
+    <div class="uk-form-controls">
+      <input class="uk-input {% if form.email.errors %}uk-form-danger{% endif %}" id="{{ form.email.id_for_label }}" type="email" name="{{ form.email.html_name }}" value="{{ form.email.value | default:"" }}" autofocus required placeholder="{% trans "example@example.com" %}" dir="auto">
+    </div>
+  </div>
+  <div>
+    <label class="uk-form-label" for="{{ form.password1.id_for_label }}">{{ form.password1.label }}:</label>
+    {{ form.password1.errors }}
+    <div class="uk-form-controls">
+      <input class="uk-input {% if form.password1.errors %}uk-form-danger{% endif %}" id="{{ form.password1.id_for_label }}" type="password" name="{{ form.password1.html_name }}" autofocus required dir="auto">
+    </div>
+  </div>
+  {% if form.password2 %}
+  <div>
+    <label class="uk-form-label" for="{{ form.password2.id_for_label }}">{{ form.password2.label }}:</label>
+    {{ form.password2.errors }}
+    <div class="uk-form-controls">
+      <input class="uk-input {% if form.password2.errors %}uk-form-danger{% endif %}" id="{{ form.password2.id_for_label }}" type="password" name="{{ form.password2.html_name }}" autofocus required dir="auto">
+    </div>
+  </div>
+  {% endif %}
+  {% if redirect_field_value %}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+  {% else %}
+  {# We want users to set their first name and last name after signing up: #}
+  <input type="hidden" name="{{ redirect_field_name }}" value="{% url "scripturet:change_name" %}" />
+  {% endif %}
+  <button class="uk-button uk-button-primary" type="submit">{% trans "Sign Up" %} &raquo;</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load i18n %}
+
+{% block head_title %}{% trans "All chapters" %}{% endblock %}
+
+{% block main %}
+
+<ul class="uk-breadcrumb">
+  <li><span>{% trans "All chapters" %}</span></li>
+</ul>
+
+{% if not perms.scripturet.view_verse %}
+
+<p>{% trans "Welcome to the project of the translation." %}</p>
+<p>{% trans "And then review and correct 10 verses in Mark 2, and also the verses in Romans 1." %}</p>
+<p>{% trans "When you are done, contact the leaders, and they will give you access to the rest of the website." %}</p>
+
+{% endif %}
+
+{% if books %}
+
+<p>{% trans "Click on the chapter number to start work." %}</p>
+
+{% for book in books %}
+
+  {# TODO: fix permissions #}
+  <h3>
+    {{ book.book_name }}
+  </h3>
+  <ul class="chapters">
+  {% for chapter_number in book.chapters_range %}
+    <li>
+      <a href="{% url "scripturet:chapter" book_code=book.book_code chapter_number=chapter_number %}">{{ chapter_number }}</a>
+      {% for new_book_code, data in new_user_access.items %}
+      {% if book.book_code == new_book_code and chapter_number in data.keys %}
+      <i class="fas fa-graduation-cap" title="{% trans "This chapter is used in initial test" %}"></i>
+      {% endif %}
+      {% endfor %}
+    </li>
+  {% endfor %}
+  </ul>
+{% endfor %}
+
+{% else %}
+<div uk-alert class="uk-alert-danger">
+  <p>{% trans "No books found." %}</p>
+</div>
+{% endif %}
+
+{% endblock %}

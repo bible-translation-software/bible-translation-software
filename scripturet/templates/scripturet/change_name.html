@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Change name" %}{% endblock %}
+
+{% block main %}
+
+<h1>{% trans "Change your name" %}</h1>
+
+<p>{% trans "Use a pseudonym if you want." %}</p>
+
+<form method="POST">
+  {% csrf_token %}
+
+  {{ form.non_field_errors }}
+
+  <div>
+    <label class="uk-form-label" for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}:</label>
+    {{ form.first_name.errors }}
+    <div class="uk-form-controls">
+      <input class="uk-input {% if form.first_name.errors %}uk-form-danger{% endif %}" id="{{ form.first_name.id_for_label }}" type="text" name="{{ form.first_name.html_name }}" value="{{ form.first_name.value | default:"" }}" autofocus required dir="auto">
+    </div>
+  </div>
+
+  <div>
+    <label class="uk-form-label" for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }} {% trans "(optional)" %}:</label>
+    {{ form.last_name.errors }}
+    <div class="uk-form-controls">
+      <input class="uk-input {% if form.last_name.errors %}uk-form-danger{% endif %}" id="{{ form.last_name.id_for_label }}" type="text" name="{{ form.last_name.html_name }}" value="{{ form.last_name.value | default:"" }}" dir="auto">
+    </div>
+  </div>
+
+  <button type="submit" class="uk-button uk-button-primary">{% trans "Change name" context "button" %}</button>
+</form>
+
+{% endblock %}

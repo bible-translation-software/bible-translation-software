@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block head_title %}{% trans "The team" %}{% endblock %}
+
+{% block main %}
+
+<ul class="uk-breadcrumb">
+  <li><span>{% trans "Team" %}</span></li>
+</ul>
+
+<h1>{% trans "The team" %}</h1>
+
+<details open>
+  <summary>{% trans "Translators" %}</summary>
+
+  <div class="team-members">
+  {% for other_user in team_members %}
+    <div class="uk-card uk-card-default team-member">
+      <a href="{{ other_user.userprofile.get_absolute_url }}">
+        <img src="{{ other_user.userprofile.get_profile_pic_url }}" width="64" height="64" alt="" crossorigin="anonymous">
+        <span>{{ other_user.get_full_name }}</span>
+      </a>
+    </div>
+  {% endfor %}
+  </div>
+</details>
+
+<details>
+  <summary>{% trans "Users waiting approval" %}</summary>
+  <div class="team-members">
+  {% for other_user in waiting_for_approval %}
+    <div class="uk-card uk-card-default team-member">
+      <a href="{{ other_user.userprofile.get_absolute_url }}">
+        <img src="{{ other_user.userprofile.get_profile_pic_url }}" width="64" height="64" alt="" crossorigin="anonymous">
+        <span>{{ other_user.get_full_name }}</span>
+      </a>
+    </div>
+  {% endfor %}
+  </div>
+</details>
+
+
+<h1>{% trans "Activity in the last four weeks:" %}</h1>
+
+{% for activity_item in activity %}
+{% ifchanged %}<h4>{{ activity_item.date_created | date:"l j F Y" }}</h4>{% endifchanged %}
+
+{% ifchanged %}
+  <!-- <h4>{{ activity_item.date_created | date:"l j F Y" }}</h4> -->
+  <p>
+  {% spaceless %}
+  <a href="{{ activity_item.user.userprofile.get_absolute_url }}">
+    <img src="{{ activity_item.user.userprofile.get_profile_pic_url }}" width="46" height="46" title="{{ activity_item.user.get_full_name }}" crossorigin="anonymous">
+  </a>
+  {% endspaceless %}
+{% endifchanged %}
+
+<a class="activity-item" href="{{ activity_item.link_href }}" title="{{ activity_item.date_created }}">
+  {{ activity_item.link_text }}
+</a>
+
+{% empty %}
+
+<div uk-alert class="uk-alert-danger">
+  <p>{% trans "No activity found." %}</p>
+</div>
+
+{% endfor %}
+
+<div uk-alert>
+  {% trans "Activity older that four weeks old not shown here." %}
+</div>
+
+
+{% endblock %}

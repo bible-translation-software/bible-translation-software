@@ -1,0 +1,10 @@
+env:
+    browser: true
+parserOptions:
+    ecmaVersion: 8
+    sourceType: 'module'
+extends: 'eslint:recommended'
+root: true
+rules:
+    no-console: off
+    no-unused-vars: warn

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Not found" %}{% endblock %}
+
+{% block main %}
+
+<h1>{% trans "Not found" %}</h1>
+
+<p>{% trans "Please contact administrators of the site for help." %}</p>
+
+<p><a href="{% url "scripturet:all_chapters" %}">{% trans "Home page" %}</a></p>
+
+{% endblock %}

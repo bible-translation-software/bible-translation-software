@@ -1,0 +1,12 @@
+{# expects these variables: verse, request #}
+{% for category, data in verse.category_reviews.items %}
+<button class="saved-category js-review-category {% if request.user in data.approvers %}saved-category--highlighted {% endif %} {% if not data.approvers %}saved-category--zero {% endif %}"
+  data-category="{{ category }}"
+  data-verse-id="{{ verse.pk }}"
+  data-highlighted="{% if request.user in data.approvers %}highlighted{% endif %}"
+>
+  <span class="js-count">{{ data.reviews|length }}</span>
+  {{ data.name }}
+  {% if data.fa %}<i class="{{ data.fa }}"></i>{% endif %}
+</button>
+{% endfor %}
