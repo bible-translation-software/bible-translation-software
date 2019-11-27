@@ -81,8 +81,8 @@
     {% endif %}">
     <div class="verse__date" dir=auto>
       {% if correction.published %}
-      <img src="{% static "scripturet/bible-app-icon.png" %}" width=32 alt="" title="{% trans "YouVersion 2018" %}">
-      {% trans "YouVersion 2018" %}
+      <img src="{% static "scripturet/bible-app-icon.png" %}" width=32 alt="" title="{% trans "Published" %}">
+      {% trans "Published" %}
       {% else %}
       {{ correction.date_created }}
       {% endif %}
